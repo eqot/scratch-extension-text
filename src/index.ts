@@ -12,6 +12,8 @@ class TextExtension {
 
   private skin: any
 
+  private width: number
+  private height: number
   private centerX: number
   private centerY: number
 
@@ -41,15 +43,16 @@ class TextExtension {
     if (!this.skin) {
       this.skin = this.runtime.renderer._allSkins[this.penSkinId]
 
-      const skinSize = this.skin.size
-      this.centerX = skinSize[0] / 2
-      this.centerY = skinSize[1] / 2
+      this.width = this.skin.size[0]
+      this.height = this.skin.size[1]
+      this.centerX = this.width / 2
+      this.centerY = this.height / 2
     }
 
     if (!this.context) {
       this.context = this.skin._canvas.getContext('2d')
       this.context.font = '24px serif'
-      this.context.fillStyle = 'rgb(0,0,0)'
+      this.context.fillStyle = 'rgb(0, 0, 0)'
     }
   }
 
@@ -82,6 +85,11 @@ class TextExtension {
               defaultValue: '0'
             }
           }
+        },
+        {
+          opcode: 'clear',
+          blockType: BlockType.COMMAND,
+          text: 'clear'
         }
       ]
     }
@@ -92,10 +100,21 @@ class TextExtension {
     const x = Cast.toNumber(args.X)
     const y = Cast.toNumber(args.Y)
 
+    this.context.fillStyle = 'rgb(0, 0, 0)'
     this.context.fillText(message, this.centerX + x, this.centerY - y)
 
+    this.redraw()
+  }
+
+  clear(args) {
+    this.context.fillStyle = 'rgb(255, 255, 255)'
+    this.context.fillRect(0, 0, this.width, this.height)
+
+    this.redraw()
+  }
+
+  private redraw() {
     this.skin._canvasDirty = true
-    this.skin._silhouetteDirty = true
     this.runtime.requestRedraw()
   }
 }
