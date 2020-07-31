@@ -77,12 +77,12 @@ class TextExtension {
               defaultValue: 'Hello, World!'
             },
             X: {
-              type: ArgumentType.STRING,
-              defaultValue: '0'
+              type: ArgumentType.NUMBER,
+              defaultValue: -10
             },
             Y: {
-              type: ArgumentType.STRING,
-              defaultValue: '0'
+              type: ArgumentType.NUMBER,
+              defaultValue: 0
             }
           }
         },
@@ -90,6 +90,29 @@ class TextExtension {
           opcode: 'clear',
           blockType: BlockType.COMMAND,
           text: 'clear'
+        },
+        {
+          opcode: 'clearRegion',
+          blockType: BlockType.COMMAND,
+          text: 'clear from x: [X1] y: [Y1] to x: [X2] y: [Y2]',
+          arguments: {
+            X1: {
+              type: ArgumentType.NUMBER,
+              defaultValue: -240
+            },
+            Y1: {
+              type: ArgumentType.NUMBER,
+              defaultValue: -160
+            },
+            X2: {
+              type: ArgumentType.NUMBER,
+              defaultValue: 240
+            },
+            Y2: {
+              type: ArgumentType.NUMBER,
+              defaultValue: 160
+            }
+          }
         }
       ]
     }
@@ -97,11 +120,10 @@ class TextExtension {
 
   drawText(args) {
     const message = Cast.toString(args.MESSAGE)
-    const x = Cast.toNumber(args.X)
-    const y = Cast.toNumber(args.Y)
+    const [x, y] = this.convertToCanvasCoordinate(args.X, args.Y)
 
     this.context.fillStyle = 'rgb(0, 0, 0)'
-    this.context.fillText(message, this.centerX + x, this.centerY - y)
+    this.context.fillText(message, x, y)
 
     this.redraw()
   }
@@ -111,6 +133,23 @@ class TextExtension {
     this.context.fillRect(0, 0, this.width, this.height)
 
     this.redraw()
+  }
+
+  clearRegion(args) {
+    const [x1, y1] = this.convertToCanvasCoordinate(args.X1, args.Y1)
+    const [x2, y2] = this.convertToCanvasCoordinate(args.X2, args.Y2)
+
+    const [x, width] = x1 <= x2 ? [x1, x2 - x1] : [x2, x1 - x2]
+    const [y, height] = y1 <= y2 ? [y1, y2 - y1] : [y2, y1 - y2]
+
+    this.context.fillStyle = 'rgb(255, 255, 255)'
+    this.context.fillRect(x, y, width, height)
+
+    this.redraw()
+  }
+
+  private convertToCanvasCoordinate(x: string, y: string): number[] {
+    return [this.centerX + Cast.toNumber(x), this.centerY - Cast.toNumber(y)]
   }
 
   private redraw() {
