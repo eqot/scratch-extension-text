@@ -22,9 +22,9 @@ class TextExtension {
   constructor(runtime: Runtime) {
     this.runtime = runtime
 
-    this.runtime.on('targetWasCreated', () => {
+    if (this.runtime.renderer) {
       this.createLayer()
-    })
+    }
   }
 
   private createLayer() {
